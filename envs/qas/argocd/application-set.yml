@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: 'appset-generator-qas'
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/maxi1555/gitops-environments.git
+      revision: HEAD
+      directories:
+      - path: 'envs/qas/*'
+      - path: 'envs/qas/argocd'
+        exclude: true
+  template:      
+    metadata:
+      name: 'app-generated-{{path[1]}}-{{path[2]}}'
+    spec:
+      # The project the application belongs to.
+      project: default
+
+      # Source of the application manifests
+      source:
+        repoURL: https://github.com/maxi1555/gitops-environments.git
+        targetRevision: HEAD
+        path: '{{path}}'
+
+      # Destination cluster and namespace to deploy the application
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path[1]}}-{{path[2]}}'
+
+      # Sync policy
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true  
+        automated: # automated sync by default retries failed attempts 5 times with following delays between attempts ( 5s, 10s, 20s, 40s, 80s ); retry controlled using `retry` field.
+          prune: true # Specifies if resources should be pruned during auto-syncing ( false by default ).
+          selfHeal: true # Specifies if partial app sync should be executed when resources are changed only in target Kubernetes cluster and no git change detected ( false by default ).
+      

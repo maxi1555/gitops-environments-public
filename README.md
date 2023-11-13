@@ -1,0 +1,1 @@
+https://blogs.sap.com/2023/11/05/gitops-with-argo-cd-kyma-multi-cluster-management/
